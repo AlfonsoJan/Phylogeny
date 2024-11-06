@@ -1,0 +1,36 @@
+name: Go Test Workflow
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  go-test:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout repository
+          uses: actions/checkout@v3
+  
+        - name: Set up Go
+          uses: actions/setup-go@v3
+          with:
+            go-version: '1.23.2' 
+  
+        - name: Cache Go modules
+          uses: actions/cache@v3  # Caches Go modules to speed up subsequent runs
+          with:
+            path: ~/.cache/go-build
+            key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+            restore-keys: |
+              ${{ runner.os }}-go-
+  
+        - name: Install dependencies
+          run: go mod tidy
+  
+        - name: Run tests
+          run: go test ./... -cover -v
+          continue-on-error: false
