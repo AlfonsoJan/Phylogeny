@@ -20,3 +20,17 @@ type Job struct {
 	Status   JobStatus `gorm:"type:varchar(20);" json:"status"`
 	Filename string    `gorm:"type:varchar(255);" json:"filename"`
 }
+
+func (job *Job) BeforeCreate(tx *gorm.DB) (err error) {
+	for {
+		job.ID = uuid.New()
+		var count int64
+		if err := tx.Model(&Job{}).Where("id = ?", job.ID).Count(&count).Error; err != nil {
+			return err
+		}
+		if count == 0 {
+			break
+		}
+	}
+	return nil
+}
