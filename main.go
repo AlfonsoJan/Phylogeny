@@ -3,6 +3,7 @@ package main
 import (
 	"Phylogeny/config"
 	"Phylogeny/database"
+	"Phylogeny/middleware"
 	"Phylogeny/routes"
 	"log"
 
@@ -26,6 +27,7 @@ func main() {
 		FilePath: "./docs/swagger.json",
 		Path:     "docs",
 	}))
+	app.Use(middleware.WebApiLogger)
 
 	database.Connect()
 
