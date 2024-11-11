@@ -1,6 +1,7 @@
 package config
 
 import (
+	"flag"
 	"os"
 	"testing"
 )
@@ -42,5 +43,53 @@ func TestGetDatabaseURL(t *testing.T) {
 
 	if url != expectedURL {
 		t.Errorf("Expected %s but got %s", expectedURL, url)
+	}
+}
+
+func TestGetEnv(t *testing.T) {
+	tests := []struct {
+		args          []string
+		expectedEnv   string
+		expectedError bool
+	}{
+		{
+			args:          []string{"-env", "dev"},
+			expectedEnv:   "dev",
+			expectedError: false,
+		},
+		{
+			args:          []string{"-env", "prod"},
+			expectedEnv:   "prod",
+			expectedError: false,
+		},
+		{
+			args:          []string{"-env", "staging"},
+			expectedEnv:   "",
+			expectedError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+		os.Args = append([]string{"cmd"}, tt.args...)
+
+		os.Unsetenv("ENV")
+
+		env, err := GetEnv()
+
+		if (err != nil) != tt.expectedError {
+			t.Errorf("GetEnv() error = %v, wantError %v", err, tt.expectedError)
+			continue
+		}
+
+		if err == nil && *env != tt.expectedEnv {
+			t.Errorf("GetEnv() = %v, want %v", *env, tt.expectedEnv)
+		}
+
+		if tt.expectedError && os.Getenv("ENV") != "" {
+			t.Errorf("os.Getenv(ENV) = %v, want empty", os.Getenv("ENV"))
+		} else if !tt.expectedError && os.Getenv("ENV") != tt.expectedEnv {
+			t.Errorf("os.Getenv(ENV) = %v, want %v", os.Getenv("ENV"), tt.expectedEnv)
+		}
 	}
 }

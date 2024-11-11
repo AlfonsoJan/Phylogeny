@@ -1,7 +1,9 @@
 package main
 
 import (
+	"Phylogeny/config"
 	"Phylogeny/database"
+	"Phylogeny/routes"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -9,17 +11,19 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
+	env, err := config.GetEnv()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatalf("Error getting environment: %v", err)
 	}
+	if err := godotenv.Load(".env." + *env); err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
+
 	app := fiber.New()
 
 	database.Connect()
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
+	routes.SetupRoutes(app)
 
 	log.Fatal(app.Listen(":3000"))
 }
