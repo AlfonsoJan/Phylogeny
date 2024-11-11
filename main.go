@@ -6,6 +6,7 @@ import (
 	"Phylogeny/routes"
 	"log"
 
+	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 )
@@ -20,6 +21,11 @@ func main() {
 	}
 
 	app := fiber.New()
+	app.Use(swagger.New(swagger.Config{
+		BasePath: "/api/v1/",
+		FilePath: "./docs/swagger.json",
+		Path:     "docs",
+	}))
 
 	database.Connect()
 

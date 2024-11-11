@@ -1,0 +1,131 @@
+definitions:
+  models.Job:
+    properties:
+      createdAt:
+        type: string
+      filename:
+        type: string
+      id:
+        type: string
+      status:
+        $ref: '#/definitions/models.JobStatus'
+      updatedAt:
+        type: string
+    type: object
+  models.JobStatus:
+    enum:
+    - QUEUED
+    - PROCESSING
+    - COMPLETED
+    - FAILED
+    type: string
+    x-enum-varnames:
+    - JobQueued
+    - JobProcessing
+    - JobCompleted
+    - JobFailed
+info:
+  contact: {}
+paths:
+  /job:
+    post:
+      consumes:
+      - application/json
+      description: Create a new job
+      parameters:
+      - description: Job object that needs to be created
+        in: body
+        name: job
+        required: true
+        schema:
+          $ref: '#/definitions/models.Job'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Job'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: create a new job
+      tags:
+      - job
+  /job/{id}:
+    delete:
+      description: Delete a job by its ID
+      parameters:
+      - description: Job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema: {}
+      summary: delete job by ID
+      tags:
+      - job
+    get:
+      consumes:
+      - application/json
+      description: Get a job by its ID
+      parameters:
+      - description: Job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Job'
+        "404":
+          description: Not Found
+          schema: {}
+      summary: retrieve job by ID
+      tags:
+      - job
+    put:
+      consumes:
+      - application/json
+      description: Update a job by its ID
+      parameters:
+      - description: Job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Job object with updated fields
+        in: body
+        name: job
+        required: true
+        schema:
+          $ref: '#/definitions/models.Job'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Job'
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+      summary: update job by ID
+      tags:
+      - job
+swagger: "2.0"
