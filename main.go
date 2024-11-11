@@ -5,6 +5,7 @@ import (
 	"Phylogeny/database"
 	"Phylogeny/middleware"
 	"Phylogeny/routes"
+	"Phylogeny/utils"
 	"log"
 
 	"github.com/gofiber/contrib/swagger"
@@ -34,5 +35,5 @@ func main() {
 	routes.SetupRoutes(app)
 	routes.NotFoundRoute(app)
 
-	log.Fatal(app.Listen(":3000"))
+	utils.StartServerWithGracefulShutdown(app)
 }
