@@ -23,6 +23,7 @@ func Connect() {
 	log.Println("Database connected!")
 
 	if env == "dev" {
+		log.Println("Environment is development")
 		DropTableIfDevelopment()
 	}
 	MigrateColumns()

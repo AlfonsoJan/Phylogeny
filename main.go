@@ -11,7 +11,10 @@ import (
 )
 
 func main() {
-	env := config.GetEnv()
+	env, err := config.GetEnv()
+	if err != nil {
+		log.Fatalf("Error getting environment: %v", err)
+	}
 	if err := godotenv.Load(".env." + *env); err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}

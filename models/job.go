@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -15,10 +17,11 @@ const (
 )
 
 type Job struct {
-	gorm.Model
-	ID       uuid.UUID `gorm:"type:uuid;primaryKey;" json:"id"`
-	Status   JobStatus `gorm:"type:varchar(20);" json:"status"`
-	Filename string    `gorm:"type:varchar(255);" json:"filename"`
+	ID        uuid.UUID `gorm:"type:uuid;primaryKey;" json:"id"`
+	Status    JobStatus `gorm:"type:varchar(20);" json:"status"`
+	Filename  string    `gorm:"type:varchar(255);" json:"filename"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func (job *Job) BeforeCreate(tx *gorm.DB) (err error) {
