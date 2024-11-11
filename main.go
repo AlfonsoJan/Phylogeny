@@ -30,6 +30,7 @@ func main() {
 	database.Connect()
 
 	routes.SetupRoutes(app)
+	routes.NotFoundRoute(app)
 
 	log.Fatal(app.Listen(":3000"))
 }
