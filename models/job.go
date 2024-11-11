@@ -35,5 +35,11 @@ func (job *Job) BeforeCreate(tx *gorm.DB) (err error) {
 			break
 		}
 	}
+	job.CreatedAt = time.Now()
+	return nil
+}
+
+func (job *Job) BeforeUpdate(tx *gorm.DB) (err error) {
+	job.UpdatedAt = time.Now()
 	return nil
 }

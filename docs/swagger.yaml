@@ -1,4 +1,11 @@
 definitions:
+  models.ErrorResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+    type: object
   models.Job:
     properties:
       createdAt:
@@ -30,102 +37,31 @@ paths:
   /job:
     post:
       consumes:
-      - application/json
-      description: Create a new job
+      - multipart/form-data
+      description: Upload a file to create a new job with its filename stored in the
+        database
       parameters:
-      - description: Job object that needs to be created
-        in: body
-        name: job
+      - description: File to be uploaded
+        in: formData
+        name: file
         required: true
-        schema:
-          $ref: '#/definitions/models.Job'
+        type: file
       produces:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Job successfully created
           schema:
             $ref: '#/definitions/models.Job'
         "400":
-          description: Bad Request
-          schema: {}
+          description: Bad request, file missing in the form-data
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
         "500":
-          description: Internal Server Error
-          schema: {}
+          description: Internal server error, unable to create job
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
       summary: create a new job
-      tags:
-      - job
-  /job/{id}:
-    delete:
-      description: Delete a job by its ID
-      parameters:
-      - description: Job ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "204":
-          description: No Content
-        "404":
-          description: Not Found
-          schema: {}
-      summary: delete job by ID
-      tags:
-      - job
-    get:
-      consumes:
-      - application/json
-      description: Get a job by its ID
-      parameters:
-      - description: Job ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.Job'
-        "404":
-          description: Not Found
-          schema: {}
-      summary: retrieve job by ID
-      tags:
-      - job
-    put:
-      consumes:
-      - application/json
-      description: Update a job by its ID
-      parameters:
-      - description: Job ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Job object with updated fields
-        in: body
-        name: job
-        required: true
-        schema:
-          $ref: '#/definitions/models.Job'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.Job'
-        "400":
-          description: Bad Request
-          schema: {}
-        "404":
-          description: Not Found
-          schema: {}
-      summary: update job by ID
       tags:
       - job
 swagger: "2.0"
