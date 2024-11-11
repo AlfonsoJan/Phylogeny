@@ -7,10 +7,14 @@ import (
 	"Phylogeny/routes"
 	"Phylogeny/utils"
 	"log"
+	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
+	"github.com/robfig/cron"
 )
 
 func main() {
@@ -31,6 +35,16 @@ func main() {
 	app.Use(middleware.WebApiLogger)
 
 	database.Connect()
+
+	tempDir := filepath.Join(os.TempDir(), "phylogeny")
+	cleanupDuration := 24 * time.Hour
+	utils.CleanupOldFiles(tempDir, cleanupDuration)
+	c := cron.New()
+	c.AddFunc("0 0 * * *", func() {
+		utils.CleanupOldFiles(tempDir, cleanupDuration)
+	})
+	c.Start()
+	defer c.Stop()
 
 	routes.SetupRoutes(app)
 	routes.NotFoundRoute(app)
