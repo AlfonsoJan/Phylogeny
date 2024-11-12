@@ -3,8 +3,10 @@ package main
 import (
 	"Phylogeny/config"
 	"Phylogeny/database"
+	"Phylogeny/handlers"
 	"Phylogeny/middleware"
 	"Phylogeny/routes"
+	"Phylogeny/tasks"
 	"Phylogeny/utils"
 	"log"
 	"os"
@@ -35,6 +37,9 @@ func main() {
 	app.Use(middleware.WebApiLogger)
 
 	database.Connect()
+
+	handlers.JobQueue = tasks.NewJobQueue(10)
+	handlers.JobQueue.StartWorkers(3)
 
 	tempDir := filepath.Join(os.TempDir(), "phylogeny")
 	cleanupDuration := 24 * time.Hour

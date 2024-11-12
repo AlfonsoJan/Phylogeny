@@ -3,14 +3,16 @@ package handlers
 import (
 	"Phylogeny/database/queries"
 	"Phylogeny/models"
+	"Phylogeny/tasks"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 )
+
+var JobQueue *tasks.JobQueue
 
 // CreateJobHandler creates a new job with an uploaded file
 //
@@ -42,8 +44,10 @@ func CreateJobHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	fileUUID := uuid.New()
-	newFilename := fmt.Sprintf("%s_%s", fileUUID.String(), fileHeader.Filename)
+	job := new(models.Job)
+	job.Status = models.JobQueued
+
+	newFilename := fmt.Sprintf("%s_%s", job.ID.String(), fileHeader.Filename)
 	filePath := filepath.Join(tempDir, newFilename)
 
 	if err := c.SaveFile(fileHeader, filePath); err != nil {
@@ -53,9 +57,7 @@ func CreateJobHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	job := new(models.Job)
 	job.Filename = newFilename
-	job.Status = models.JobQueued
 
 	if err := queries.CreateJob(job); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{
@@ -63,6 +65,8 @@ func CreateJobHandler(c *fiber.Ctx) error {
 			Message: err.Error(),
 		})
 	}
+
+	JobQueue.Enqueue(job)
 
 	log.Println("Job created with ID:", job.ID)
 	return c.Status(fiber.StatusCreated).JSON(job)

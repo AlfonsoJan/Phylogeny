@@ -11,7 +11,7 @@ func CreateJob(job *models.Job) error {
 	return database.DB.Create(&job).Error
 }
 
-func updateJobStatus(job *models.Job, status models.JobStatus) error {
+func UpdateJobStatus(job *models.Job, status models.JobStatus) error {
 	job.Status = status
 	return database.DB.Save(&job).Error
 }
