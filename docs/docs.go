@@ -15,9 +15,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/job": {
+        "/jobs": {
             "post": {
-                "description": "Upload a file to create a new job with its filename stored in the database",
+                "description": "This endpoint allows you to create a new job by uploading a file, which will be saved in a temporary directory.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -25,13 +25,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "job"
+                    "jobs"
                 ],
-                "summary": "create a new job",
+                "summary": "Create a new job with file upload",
                 "parameters": [
                     {
                         "type": "file",
-                        "description": "File to be uploaded",
+                        "description": "File to upload",
                         "name": "file",
                         "in": "formData",
                         "required": true
@@ -39,7 +39,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Job successfully created",
+                        "description": "Job created successfully",
                         "schema": {
                             "$ref": "#/definitions/models.Job"
                         }
@@ -47,13 +47,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request, file missing in the form-data",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error, unable to create job",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     }
                 }
@@ -61,7 +61,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.ErrorResponse": {
+        "dto.ErrorResponse": {
             "type": "object",
             "properties": {
                 "error": {

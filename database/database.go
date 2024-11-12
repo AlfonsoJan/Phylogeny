@@ -2,9 +2,9 @@ package database
 
 import (
 	"Phylogeny/config"
-	"Phylogeny/models"
+	"Phylogeny/entities/models"
+	"fmt"
 	"log"
-	"os"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -12,29 +12,26 @@ import (
 
 var DB *gorm.DB
 
-func Connect() {
+func Connect() error {
 	var err error
-	env := os.Getenv("ENV")
-	dsn := config.GetDatabaseURL()
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	DB, err = gorm.Open(postgres.Open(config.EnvConfig.DBURL), &gorm.Config{})
 	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
+		return fmt.Errorf("error connecting to database: %v", err)
 	}
 	log.Println("Database connected!")
-
-	if env == "dev" {
-		log.Println("Environment is development")
-		DropTableIfDevelopment()
+	if config.EnvConfig.DEV {
+		dropTableIfDevelopment()
 	}
-	MigrateColumns()
+	migrateColumns()
+	return nil
 }
 
-func DropTableIfDevelopment() {
+func dropTableIfDevelopment() {
 	if err := DB.Migrator().DropTable(&models.Job{}); err != nil {
 		log.Fatalf("Failed to drop Job table: %v", err)
 	}
 }
 
-func MigrateColumns() {
+func migrateColumns() {
 	DB.AutoMigrate(&models.Job{})
 }

@@ -8,16 +8,10 @@ import (
 )
 
 func WebApiLogger(c *fiber.Ctx) error {
-	// Record the start time
 	start := time.Now()
-
-	// Call the next middleware or handler
 	err := c.Next()
-
-	// Calculate the duration
 	duration := time.Since(start)
 
-	// Log the details of the request
 	log.Printf(
 		"[API Logger] %s %s %d - %v",
 		c.Method(),

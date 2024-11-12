@@ -1,5 +1,5 @@
 definitions:
-  models.ErrorResponse:
+  dto.ErrorResponse:
     properties:
       error:
         type: string
@@ -34,14 +34,14 @@ definitions:
 info:
   contact: {}
 paths:
-  /job:
+  /jobs:
     post:
       consumes:
       - multipart/form-data
-      description: Upload a file to create a new job with its filename stored in the
-        database
+      description: This endpoint allows you to create a new job by uploading a file,
+        which will be saved in a temporary directory.
       parameters:
-      - description: File to be uploaded
+      - description: File to upload
         in: formData
         name: file
         required: true
@@ -50,18 +50,18 @@ paths:
       - application/json
       responses:
         "201":
-          description: Job successfully created
+          description: Job created successfully
           schema:
             $ref: '#/definitions/models.Job'
         "400":
           description: Bad request, file missing in the form-data
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal server error, unable to create job
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
-      summary: create a new job
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Create a new job with file upload
       tags:
-      - job
+      - jobs
 swagger: "2.0"
