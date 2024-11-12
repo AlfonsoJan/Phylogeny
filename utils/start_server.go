@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"Phylogeny/handlers"
 	"log"
 	"os"
 	"os/signal"
@@ -20,6 +21,8 @@ func StartServerWithGracefulShutdown(a *fiber.App) {
 			log.Printf("Oops... Server is not shutting down! Reason: %v", err)
 		}
 
+		handlers.JobQueue.Shutdown()
+
 		close(idleConnsClosed)
 	}()
 	if err := a.Listen(os.Getenv("SERVER_URL")); err != nil {
@@ -27,4 +30,5 @@ func StartServerWithGracefulShutdown(a *fiber.App) {
 	}
 
 	<-idleConnsClosed
+	log.Println("Server shut down gracefully.")
 }
