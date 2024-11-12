@@ -2,7 +2,7 @@ package queries
 
 import (
 	"Phylogeny/database"
-	"Phylogeny/models"
+	"Phylogeny/entities/models"
 	"errors"
 )
 

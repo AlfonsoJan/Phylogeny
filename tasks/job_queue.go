@@ -2,7 +2,7 @@ package tasks
 
 import (
 	"Phylogeny/database/queries"
-	"Phylogeny/models"
+	"Phylogeny/entities/models"
 	"log"
 	"sync"
 	"time"

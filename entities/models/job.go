@@ -25,16 +25,6 @@ type Job struct {
 }
 
 func (job *Job) BeforeCreate(tx *gorm.DB) (err error) {
-	for {
-		job.ID = uuid.New()
-		var count int64
-		if err := tx.Model(&Job{}).Where("id = ?", job.ID).Count(&count).Error; err != nil {
-			return err
-		}
-		if count == 0 {
-			break
-		}
-	}
 	job.CreatedAt = time.Now()
 	return nil
 }
