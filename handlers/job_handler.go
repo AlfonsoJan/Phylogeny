@@ -39,13 +39,6 @@ func CreateJobHandler(c *fiber.Ctx) error {
 	}
 	tempDir := filepath.Join(os.TempDir(), "phylogeny")
 
-	if err := os.MkdirAll(tempDir, os.ModePerm); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(dto.ErrorResponse{
-			Error:   "Cannot create temp directory",
-			Message: err.Error(),
-		})
-	}
-
 	job := new(models.Job)
 	job.Status = models.JobQueued
 	job.ID, err = utils.GenerateUniqueUUID(database.DB)

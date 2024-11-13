@@ -13,6 +13,10 @@ func CleanupOldFiles(dir string, maxAge time.Duration) {
 
 	count := 0
 
+	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+		log.Fatal("Failed to create the temp dir")
+	}
+
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			log.Printf("Error accessing file %s: %v", path, err)

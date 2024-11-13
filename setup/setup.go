@@ -50,8 +50,24 @@ func startServerWithGracefulShutdown(a *fiber.App) {
 		signal.Notify(sigint, os.Interrupt)
 		<-sigint
 
-		if err := a.Shutdown(); err != nil {
-			log.Printf("Oops... Server is not shutting down! Reason: %v", err)
+		log.Println("Initiating server shutdown...")
+
+		fiberShutdownDone := make(chan struct{})
+
+		go func() {
+			if err := a.Shutdown(); err != nil {
+				log.Printf("Oops... Server shutdown failed! Reason: %v", err)
+			} else {
+				log.Println("Server shutdown completed.")
+			}
+			close(fiberShutdownDone)
+		}()
+
+		select {
+		case <-fiberShutdownDone:
+			log.Println("Fiber server has shut down gracefully.")
+		case <-time.After(10 * time.Second):
+			log.Println("Fiber shutdown timed out. Continuing with job queue shutdown.")
 		}
 
 		handlers.JobQueue.Shutdown()
@@ -67,8 +83,10 @@ func startServerWithGracefulShutdown(a *fiber.App) {
 }
 
 func setupRoutes(app *fiber.App) {
+	// app.Static("/", "./static/index.html")
 	api := app.Group("/api/v1")
 	api.Post("/job", handlers.CreateJobHandler)
+	app.Get("/ws/jobstatus/:jobID", handlers.JobStatusWebSocket(handlers.JobQueue))
 
 	routes.NotFoundRoute(app)
 }
