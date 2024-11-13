@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/ico" href="favicon.ico">
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="/js/toast-container.js"></script>
+  <title>Phylogeny</title>
+</head>
+<body>
+  <toast-container id="toast-container"></toast-container>
+  <div class="container">
+    <div class="file-upload-container">
+      <input type="file" id="file-upload" style="display: none;">
+      <p class="file-name">No file chosen</p>
+      <p class="file-button">Choose file</p>
+    </div>
+    <button class="submit-button-file" disabled>Submit</button>
+    <h2>Job Statuses</h2>
+    <table id="jobStatusTable">
+      <thead>
+        <tr>
+          <th>Job ID</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    let selectedFile = null;
+    const jobSockets = {};
+    const fileUpload = document.getElementById('file-upload');
+    const fileButton = document.querySelector('.file-button');
+    const submitButton = document.querySelector('.submit-button-file');
+    const toastContainer = document.getElementById('toast-container');
+    const jobStatusTable = document.getElementById('jobStatusTable');
+    const jobStatusTableBody = jobStatusTable.getElementsByTagName("tbody")[0];
+
+    fileButton.addEventListener('click', () => {
+      fileUpload.click();
+    });
+    fileUpload.addEventListener('input', () => {
+      const fileNameDisplay = document.querySelector('.file-name')
+      if (fileUpload.files.length > 0) {
+        selectedFile = fileUpload.files[0];
+        fileNameDisplay.textContent = selectedFile.name
+        submitButton.disabled = false;
+      } else if (selectedFile) {
+        document.querySelector('.file-name').textContent = selectedFile.name;
+        submitButton.disabled = false;
+      } else {
+        fileNameDisplay.textContent = "No file chosen";
+        submitButton.disabled = true;
+      }
+    })
+
+    submitButton.addEventListener('click', async (event) => {
+      event.preventDefault();
+      if (!selectedFile) {
+        toastContainer.addToast("Please select a file!", "error");
+        return
+      }
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      const response = await fetch("api/v1/job", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) {
+        const errorData = await response.text();
+        toastContainer.addToast(`Error: ${errorData}`, "error");
+        return 
+      }
+      toastContainer.addToast(`Uploaded ${selectedFile.name}`);
+      const jobData = await response.json();
+      const jobID = jobData.id;
+
+      if (jobStatusTableBody.rows.length === 1 && jobStatusTableBody.rows[0].getElementsByTagName('td')[0].getAttribute('id')) {
+        jobStatusTableBody.deleteRow(0);
+      }
+
+      const newRow = jobStatusTableBody.insertRow();
+      const jobIDCell = newRow.insertCell(0);
+      const statusCell = newRow.insertCell(1);
+      jobIDCell.textContent = jobID;
+      statusCell.textContent = 'Waiting for status updates...';
+
+      connectToWebSocket(jobID, statusCell);
+    });
+
+    function connectToWebSocket(jobID, statusCell) {
+      const socket = new WebSocket(`ws://127.0.0.1:3000/ws/jobstatus/${jobID}`);
+      jobSockets[jobID] = socket;
+
+      socket.onopen = () => {
+        console.log(`Connected to WebSocket for job ${jobID} status updates.`);
+      };
+
+      socket.onmessage = (event) => {
+        const jobStatusText = event.data.trim();
+        statusCell.textContent = `Status: ${jobStatusText}`;
+
+        if (jobStatusText.toUpperCase() === "COMPLETED") {
+          statusCell.classList.add('job-status-completed');
+          statusCell.classList.remove('job-status-failed', 'job-status-pending');
+        } else if (jobStatusText.toUpperCase() === "FAILED") {
+          statusCell.classList.add('job-status-failed');
+          statusCell.classList.remove('job-status-completed', 'job-status-pending');
+        } else {
+          statusCell.classList.add('job-status-pending');
+          statusCell.classList.remove('job-status-completed', 'job-status-failed');
+        }
+        
+        if (jobStatusText.toUpperCase() === "COMPLETED" || jobStatusText.toUpperCase() === "FAILED") {
+          setTimeout(() => {
+            socket.close();
+            waitForSocketClose(socket, jobID);
+          }, 1000);
+        }
+      };
+
+      socket.onclose = () => {
+        console.log(`WebSocket connection for job ${jobID} closed.`);
+      };
+
+      socket.onerror = (error) => {
+        console.error(`WebSocket error for job ${jobID}:`, error);
+      };
+    }
+
+    function waitForSocketClose(socket, jobID) {
+      const interval = setInterval(() => {
+        if (socket.readyState === 3) {
+          clearInterval(interval);
+          delete jobSockets[jobID];
+        }
+      }, 100);
+    }
+    function addDefaultRow() {
+      if (jobStatusTableBody.rows.length === 0) {
+        const row = jobStatusTableBody.insertRow();
+        const cell = row.insertCell(0);
+        cell.id = "no-job"
+        cell.colSpan = 2;
+        cell.textContent = 'No jobs uploaded';
+        cell.style.textAlign = 'center';
+        cell.style.fontStyle = 'italic';
+        cell.style.color = '#777';
+      }
+    }
+    addDefaultRow();
+  </script>
+</body>
+</html>

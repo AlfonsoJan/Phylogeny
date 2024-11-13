@@ -16,6 +16,7 @@ import (
 
 	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/robfig/cron"
 )
 
@@ -31,14 +32,18 @@ func Setup(app *fiber.App) error {
 	}))
 	setupJobQueue()
 	setupScheduledTasks()
-	setupRoutes(app)
 	setupMiddleWares(app)
+	setupRoutes(app)
 	// Always the last function to be called
 	startServerWithGracefulShutdown(app)
 	return nil
 }
 
 func setupMiddleWares(app *fiber.App) {
+	app.Use(favicon.New(favicon.Config{
+		File: "./static/images/favicon.ico",
+		URL:  "/favicon.ico",
+	}))
 	app.Use(middleware.WebApiLogger)
 }
 
@@ -84,6 +89,7 @@ func startServerWithGracefulShutdown(a *fiber.App) {
 
 func setupRoutes(app *fiber.App) {
 	// app.Static("/", "./static/index.html")
+	app.Static("/", "./static")
 	api := app.Group("/api/v1")
 	api.Post("/job", handlers.CreateJobHandler)
 	app.Get("/ws/jobstatus/:jobID", handlers.JobStatusWebSocket(handlers.JobQueue))
